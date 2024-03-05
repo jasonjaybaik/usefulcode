@@ -1,0 +1,25 @@
+#Download file from internet
+from pyodide.http import pyfetch #not needed for normal local machines
+
+import pandas as pd
+
+filename = "https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBMDeveloperSkillsNetwork-PY0101EN-SkillsNetwork/labs/Module%204/data/example1.txt"
+
+async def download(url, filename):
+
+    response = await pyfetch(url)
+
+    if response.status == 200:
+
+        with open(filename, "wb") as f:
+
+            f.write(await response.bytes())
+
+await download(filename, "example1.txt")
+
+print("done")
+
+#Open file
+with open(example1, "r") as file1:
+    FileContent = file1.read()
+    print(FileContent)
