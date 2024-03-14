@@ -51,6 +51,8 @@ df = pd.read_csv("diabetes.csv")
 
 
 ###Check missing data in columns
+missing_data = df.isnull()
+
 for column in missing_data.columns.values.tolist():
     print(column)
     print (missing_data[column].value_counts())
@@ -101,3 +103,74 @@ tesla_revenue["Revenue"] = tesla_revenue['Revenue'].str.replace(',|\$',"")
 tesla_revenue.dropna(inplace=True)
 
 tesla_revenue = tesla_revenue[tesla_revenue['Revenue'] != ""]
+
+### Data Cleaning
+
+missing_data = df.isnull()
+missing_data.head(5)
+for column in missing_data.columns.values.tolist():
+    print(column)
+    print (missing_data[column].value_counts())
+    print("")    
+
+avg_norm_loss = df["normalized-losses"].astype("float").mean(axis=0)
+print("Average of normalized-losses:", avg_norm_loss)
+
+df['num-of-doors'].value_counts()
+df['num-of-doors'].value_counts().idxmax()
+df["num-of-doors"].replace(np.nan, "four", inplace=True)
+
+df.dropna(subset=["price"], axis=0, inplace=True)
+
+# reset index, because we droped two rows
+df.reset_index(drop=True, inplace=True)
+
+df[["bore", "stroke"]] = df[["bore", "stroke"]].astype("float")
+df[["normalized-losses"]] = df[["normalized-losses"]].astype("int")
+df[["price"]] = df[["price"]].astype("float")
+df[["peak-rpm"]] = df[["peak-rpm"]].astype("float")
+
+df['city-L/100km'] = 235/df["city-mpg"]
+df['highway-mpg'] = 235/df['highway-mpg']
+df.rename(columns={'highway-mpg':'highway-L/100km'}, inplace = True)
+
+df['length'] = df['length']/df['length'].max()
+df['width'] = df['width']/df['width'].max()
+
+df["horsepower"]=df["horsepower"].astype(int, copy=True)
+%matplotlib inline
+import matplotlib as plt
+from matplotlib import pyplot
+plt.pyplot.hist(df["horsepower"])
+
+# set x/y labels and plot title
+plt.pyplot.xlabel("horsepower")
+plt.pyplot.ylabel("count")
+plt.pyplot.title("horsepower bins")
+
+bins = np.linspace(min(df["horsepower"]), max(df["horsepower"]), 4)
+bins
+group_names = ['Low', 'Medium', 'High']
+df['horsepower-binned'] = pd.cut(df['horsepower'], bins, labels=group_names, include_lowest=True )
+df[['horsepower','horsepower-binned']].head(20)
+
+df["horsepower-binned"].value_counts()
+
+%matplotlib inline
+import matplotlib as plt
+from matplotlib import pyplot
+pyplot.bar(group_names, df["horsepower-binned"].value_counts())
+
+# set x/y labels and plot title
+plt.pyplot.xlabel("horsepower")
+plt.pyplot.ylabel("count")
+plt.pyplot.title("horsepower bins")
+
+dummy_variable_1 = pd.get_dummies(df["fuel-type"])
+dummy_variable_1.head()
+
+dummy_variable_1.rename(columns={'gas':'fuel-type-gas', 'diesel':'fuel-type-diesel'}, inplace=True)
+dummy_variable_1.head()
+
+dummy_variable_1.rename(columns={'gas':'fuel-type-gas', 'diesel':'fuel-type-diesel'}, inplace=True)
+dummy_variable_1.head()
