@@ -174,3 +174,5 @@ dummy_variable_1.head()
 
 dummy_variable_1.rename(columns={'gas':'fuel-type-gas', 'diesel':'fuel-type-diesel'}, inplace=True)
 dummy_variable_1.head()
+
+df = pd.concat([df,dummy_variable2], axis = 1)
