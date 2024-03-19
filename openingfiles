@@ -176,3 +176,16 @@ dummy_variable_1.rename(columns={'gas':'fuel-type-gas', 'diesel':'fuel-type-dies
 dummy_variable_1.head()
 
 df = pd.concat([df,dummy_variable2], axis = 1)
+
+
+### Data Visualization to Analyze Code
+
+width = 12
+height = 10
+plt.figure(figsize=(width, height))
+sns.residplot(x=df['highway-mpg'], y=df['price'])
+plt.show()
+
+plt.figure(figsize=(width, height))
+sns.regplot(x="peak-rpm", y="price", data=df)
+plt.ylim(0,)
