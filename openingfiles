@@ -180,12 +180,183 @@ df = pd.concat([df,dummy_variable2], axis = 1)
 
 ### Data Visualization to Analyze Code
 
+# Residual plot
 width = 12
 height = 10
 plt.figure(figsize=(width, height))
 sns.residplot(x=df['highway-mpg'], y=df['price'])
 plt.show()
 
+# Regression plot
 plt.figure(figsize=(width, height))
 sns.regplot(x="peak-rpm", y="price", data=df)
 plt.ylim(0,)
+
+# distro plot
+Y_hat = lm.predict(Z)
+plt.figure(figsize=(width, height))
+
+ax1 = sns.distplot(df['price'], hist=False, color="r", label="Actual Value")
+sns.distplot(Y_hat, hist=False, color="b", label="Fitted Values" , ax=ax1)
+
+plt.title('Actual vs Fitted Values for Price')
+plt.xlabel('Price (in dollars)')
+plt.ylabel('Proportion of Cars')
+
+plt.show()
+plt.close()
+
+# polynomial plot
+def PlotPolly(model, independent_variable, dependent_variabble, Name):
+    x_new = np.linspace(15, 55, 100)
+    y_new = model(x_new)
+
+    plt.plot(independent_variable, dependent_variabble, '.', x_new, y_new, '-')
+    plt.title('Polynomial Fit with Matplotlib for Price ~ Length')
+    ax = plt.gca()
+    ax.set_facecolor((0.898, 0.898, 0.898))
+    fig = plt.gcf()
+    plt.xlabel(Name)
+    plt.ylabel('Price of Cars')
+
+    plt.show()
+    plt.close()
+
+x = df['highway-mpg']
+y = df['price']
+
+f = np.polyfit(x, y, 3)
+p = np.poly1d(f)
+print(p)
+
+PlotPolly(p, x, y, 'highway-mpg')
+
+np.polyfit(x, y, 3)
+
+### import for advanced data preprocessing
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import StandardScaler, PolynomialFeatures
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import mean_squared_error, r2_score
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning) 
+%matplotlib inline
+
+
+### only get numeric data
+df=df._get_numeric_data()
+
+
+### create test + train samples
+
+from sklearn.model_selection import train_test_split
+
+x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=0.10, random_state=1)
+
+print("number of test samples :", x_test.shape[0])
+print("number of training samples:",x_train.shape[0])
+
+from sklearn.linear_model import LinearRegression
+lre=LinearRegression()
+lre.fit(x_train[['horsepower']], y_train)
+lre.score(x_test[['horsepower']], y_test)
+lre.score(x_train[['horsepower']], y_train)
+
+### cross validation
+
+from sklearn.model_selection import cross_val_score
+Rcross = cross_val_score(lre, x_data[['horsepower']], y_data, cv=4)
+print("The mean of the folds are", Rcross.mean(), "and the standard deviation is" , Rcross.std())
+-1 * cross_val_score(lre,x_data[['horsepower']], y_data,cv=4,scoring='neg_mean_squared_error')
+
+from sklearn.model_selection import cross_val_predict
+yhat = cross_val_predict(lre,x_data[['horsepower']], y_data,cv=4)
+yhat[0:5]
+
+
+### pre-built code for distrbiution and polynomial plotting and data viz
+
+def DistributionPlot(RedFunction, BlueFunction, RedName, BlueName, Title):
+    width = 12
+    height = 10
+    plt.figure(figsize=(width, height))
+    
+    ax1 = sns.kdeplot(RedFunction, color="r", label=RedName)
+    ax2 = sns.kdeplot(BlueFunction, color="b", label=BlueName, ax=ax1)
+
+    plt.title(Title)
+    plt.xlabel('Price (in dollars)')
+    plt.ylabel('Proportion of Cars')
+    plt.show()
+    plt.close()
+
+def PollyPlot(xtrain, xtest, y_train, y_test, lr,poly_transform):
+    width = 12
+    height = 10
+    plt.figure(figsize=(width, height))
+    
+    
+    #training data 
+    #testing data 
+    # lr:  linear regression object 
+    #poly_transform:  polynomial transformation object 
+ 
+    xmax=max([xtrain.values.max(), xtest.values.max()])
+
+    xmin=min([xtrain.values.min(), xtest.values.min()])
+
+    x=np.arange(xmin, xmax, 0.1)
+
+
+    plt.plot(xtrain, y_train, 'ro', label='Training Data')
+    plt.plot(xtest, y_test, 'go', label='Test Data')
+    plt.plot(x, lr.predict(poly_transform.fit_transform(x.reshape(-1, 1))), label='Predicted Function')
+    plt.ylim([-10000, 60000])
+    plt.ylabel('Price')
+    plt.legend
+
+### finding right polynomial order
+Rsqu_test = []
+
+order = [1, 2, 3, 4]
+for n in order:
+    pr = PolynomialFeatures(degree=n)
+    
+    x_train_pr = pr.fit_transform(x_train[['horsepower']])
+    
+    x_test_pr = pr.fit_transform(x_test[['horsepower']])    
+    
+    lr.fit(x_train_pr, y_train)
+    
+    Rsqu_test.append(lr.score(x_test_pr, y_test))
+
+plt.plot(order, Rsqu_test)
+plt.xlabel('order')
+plt.ylabel('R^2')
+plt.title('R^2 Using Test Data')
+plt.text(3, 0.75, 'Maximum R^2 ')    
+
+
+### find correct alpha value
+from tqdm import tqdm
+
+Rsqu_test = []
+Rsqu_train = []
+dummy1 = []
+Alpha = 10 * np.array(range(0,1000))
+pbar = tqdm(Alpha)
+
+for alpha in pbar:
+    RigeModel = Ridge(alpha=alpha) 
+    RigeModel.fit(x_train_pr, y_train)
+    test_score, train_score = RigeModel.score(x_test_pr, y_test), RigeModel.score(x_train_pr, y_train)
+    
+    pbar.set_postfix({"Test Score": test_score, "Train Score": train_score})
+
+    Rsqu_test.append(test_score)
+    Rsqu_train.append(train_score)
