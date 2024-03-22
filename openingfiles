@@ -339,7 +339,7 @@ plt.plot(order, Rsqu_test)
 plt.xlabel('order')
 plt.ylabel('R^2')
 plt.title('R^2 Using Test Data')
-plt.text(3, 0.75, 'Maximum R^2 ')    
+plt.text(3, 0.75, 'Maximum R^2 ')    http://www.crossfit.com/cf-info/excercise.html
 
 
 ### find correct alpha value
@@ -360,3 +360,39 @@ for alpha in pbar:
 
     Rsqu_test.append(test_score)
     Rsqu_train.append(train_score)
+
+
+### module required by Pandas to read Excel
+
+!mamba install openpyxl==3.0.9 -y
+
+df_can = pd.read_excel(
+    'https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBMDeveloperSkillsNetwork-DV0101EN-SkillsNetwork/Data%20Files/Canada.xlsx',
+    sheet_name='Canada by Citizenship',
+    skiprows=range(20),
+    skipfooter=2)
+
+
+### range of years from numeric to string
+
+year = list(map(str, range(1990, 2014)))
+
+
+### sorting
+df_can.sort_values(by='Total', ascending=False, axis=0, inplace=True)
+
+
+### add labels to each bar
+top15.plot(kind='barh', figsize = (10,5), color = 'b')
+plt.title("Top 15")
+plt.xlabel("Total Immigration")
+plt.ylabel("Countries")
+
+for index, value in enumerate(top15): 
+        label = format(int(value), ',') # format int with commas
+    
+    # place text at the end of bar (subtracting 47000 from x, and 0.1 from y to make it fit within the bar)
+        plt.annotate(label, xy=(value - 47000, index - 0.10), color='white')
+
+plt.show()
+plt.close()
